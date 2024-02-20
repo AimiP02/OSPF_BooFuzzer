@@ -42,3 +42,33 @@ class BaseFuzzer():
     def wait_for_target(self, target, fuzz_data_logger, session, *args, **kwargs):
         while self.rpc_client.is_target_alive(0) == False:
             pass
+
+    '''
+    This function is called after a test case is sent to the target. Tries
+    to approximate which test case / fuzzload caused the target to go down
+    and generates a PoC using that fuzzload.
+    '''
+    def post_send(self, target, fuzz_data_logger, session, *args, **kwargs):
+        if self.rpc_client.is_target_alive() == False:
+            mutant_index = session.mutant_index-1
+            payload = self.get_payload(session, mutant_index)
+            self.rpc_client.receive_testcase(type(self).__name__, mutant_index, payload)
+
+            if payload != None:
+                poc = self.generate_poc(type(self).__name__, mutant_index, payload)
+                with open(self.poc_name % mutant_index, 'w') as _tfile:
+                    _tfile.write(poc)
+
+    '''
+    Gets a fuzzload from the fuzzing session. This function should be
+    implemented for each fuzzer separately.
+    '''
+    def get_payload(self, session, index):
+        pass
+
+    ''' 
+    Generates a PoC from a given fuzzload. This function should be
+    implemented for each fuzzer separately.
+    '''
+    def generate_poc(self, test_suite, mutant_index, payload):
+        pass
