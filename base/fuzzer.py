@@ -4,11 +4,10 @@ from boofuzz import *
 The base class for all fuzzers.
 '''
 class BaseFuzzer():
-    def __init__(self, ospf_id, rhost, rpc_port=1234, rport='179', hold_time=240):
-        self.ospf_id = ospf_id
+    def __init__(self, router_id, area_id, rhost, rpc_port=1234):
+        self.router_id = router_id
+        self.area_id = area_id
         self.rhost = rhost
-        self.hold_time = hold_time
-        self.rport = int(rport)
         self.rpc_client = pedrpc.Client(rhost, int(rpc_port))
         self.fuzz_logger = FuzzLoggerCsv()
         self.session_handle = Session(
@@ -53,11 +52,6 @@ class BaseFuzzer():
             mutant_index = session.mutant_index-1
             payload = self.get_payload(session, mutant_index)
             self.rpc_client.receive_testcase(type(self).__name__, mutant_index, payload)
-
-            if payload != None:
-                poc = self.generate_poc(type(self).__name__, mutant_index, payload)
-                with open(self.poc_name % mutant_index, 'w') as _tfile:
-                    _tfile.write(poc)
 
     '''
     Gets a fuzzload from the fuzzing session. This function should be
