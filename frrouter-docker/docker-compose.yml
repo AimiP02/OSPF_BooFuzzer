@@ -1,0 +1,106 @@
+version: "3"
+services:
+        frrouter1:
+                build:
+                        context: ./build
+                        dockerfile: Dockerfile-frrouter
+                container_name: frrouter1
+                hostname: frrouter1
+                networks:
+                        net1:
+                                ipv4_address: 172.18.0.3
+                        net2:
+                                ipv4_address: 172.19.0.2
+                volumes:
+                        - ./files/orchestrator.sh:/usr/src/files/orchestrator.sh
+                        - ./configs/frrouter1/.env:/usr/src/config/.env
+                        - ./configs/frrouter1/frr/:/etc/frr
+                        - /home/lab420/ospf_work/ospf_boofuzzer/:/home/fuzzer
+                cap_add:
+                        - NET_ADMIN
+                        - NET_BIND_SERVICE
+                        - NET_RAW
+                        - SYS_ADMIN
+                command: 'sh -c "/usr/src/files/orchestrator.sh"'
+                privileged: true
+                ports:
+                        - "26000:12345"
+        frrouter2:
+                build:
+                        context: ./build
+                        dockerfile: Dockerfile-frrouter
+                container_name: frrouter2
+                hostname: frrouter2
+                networks:
+                        net2:
+                                ipv4_address: 172.19.0.3
+                        net3:
+                                ipv4_address: 172.20.0.3
+                volumes:
+                        - ./files/orchestrator.sh:/usr/src/files/orchestrator.sh
+                        - ./configs/frrouter2/.env:/usr/src/config/.env
+                        - ./configs/frrouter2/frr/:/etc/frr
+                cap_add:
+                        - NET_ADMIN
+                        - NET_BIND_SERVICE
+                        - NET_RAW
+                        - SYS_ADMIN
+                command: 'sh -c "/usr/src/files/orchestrator.sh"'
+                privileged: true
+
+        host1:
+                build:
+                        context: ./build
+                        dockerfile: Dockerfile-host
+                container_name: host1
+                hostname: host1
+                networks:
+                        net1:
+                                ipv4_address: 172.18.0.2
+                cap_add:
+                        - NET_ADMIN
+                volumes:
+                        - ./files/host-orch.sh:/usr/src/files/host-orch.sh
+                        - ./configs/host1/:/usr/src/config/
+                command: 'sh -c "/usr/src/files/host-orch.sh"'
+                privileged: true
+
+        host2:
+                build:
+                        context: ./build
+                        dockerfile: Dockerfile-host
+                container_name: host2
+                hostname: host2
+                networks:
+                        net3:
+                                ipv4_address: 172.20.0.2
+                cap_add:
+                        - NET_ADMIN
+                volumes:
+                        - ./files/host-orch.sh:/usr/src/files/host-orch.sh
+                        - ./configs/host2/.env:/usr/src/config/.env
+                command: 'sh -c "/usr/src/files/host-orch.sh"'
+                privileged: true
+
+networks:
+        net1:
+                enable_ipv6: false
+                driver: bridge
+                ipam:
+                        driver: default
+                        config:
+                                - subnet: 172.18.0.0/24
+        net2:
+                enable_ipv6: false
+                driver: bridge
+                ipam:
+                        driver: default
+                        config:
+                                - subnet: 172.19.0.0/24
+        net3:
+                enable_ipv6: false
+                driver: bridge
+                ipam:
+                        driver: default
+                        config:
+                                - subnet: 172.20.0.0/24

@@ -102,14 +102,15 @@ stop_target() and start_target() functions to reflect your environment.
 '''
 class FRRMonitor(TargetMonitor):
     def __init__(self, binary_path='/usr/lib/frr/ospfd'):
+        self.service_dir = '/etc/init.d/frr'
         super().__init__(binary_path)
 
     def stop_target(self):
-        command = 'systemctl stop frr'
+        command = self.service_dir + ' stop'
         subprocess.run(command.split(' '))
 
     def start_target(self):
-        command = 'systemctl start frr'
+        command = self.service_dir + ' start'
         subprocess.run(command.split(' '))
 
 '''

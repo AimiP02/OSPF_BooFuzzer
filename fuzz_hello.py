@@ -8,8 +8,6 @@ from base.ospf_hello import OSPFHelloFuzzerBase
 
 '''
 OSPF Hello #1
-
-
 '''
 
 class OSPFHelloFuzzer_1(OSPFHelloFuzzerBase):
@@ -71,3 +69,5 @@ if __name__ == '__main__':
     fuzzer = OSPFHelloFuzzer_1(router_id=ROUTER_ID, area_id=AREA_ID, rhost=TIP, rpc_port=TRPC_PORT)
 
     fuzzer.do_fuzz()
+
+    print('Done!')
