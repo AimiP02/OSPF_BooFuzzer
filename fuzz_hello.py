@@ -38,8 +38,9 @@ class OSPFHelloFuzzer_1(OSPFHelloFuzzerBase):
                 s_byte(value=0x02, name='Options', endian=BIG_ENDIAN, fuzzable=False) # options
                 s_byte(value=0x01, name='Router Priority', endian=BIG_ENDIAN, fuzzable=False) # Router Priority
                 s_dword(value=40, name='Router Dead Interval', endian=BIG_ENDIAN, fuzzable=False) # Router Dead Interval
-                # Designated Router
-                # Backup Designated Router
+                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Designated Router
+                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Backup Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Backup Designated Router
+                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Active Neighbor', endian=BIG_ENDIAN, fuzzable=False) # Active Neighbor
             s_block_end()
         s_block_end()
 

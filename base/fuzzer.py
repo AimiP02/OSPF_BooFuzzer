@@ -8,14 +8,12 @@ class BaseFuzzer():
         self.router_id = router_id
         self.area_id = area_id
         self.rhost = rhost
-        self.rport = rpc_port
         self.rpc_client = pedrpc.Client(rhost, int(rpc_port))
         self.fuzz_logger = FuzzLoggerCsv()
         self.session_handle = Session(
             target=Target(
-                connection=TCPSocketConnection(
-                    host=self.rhost,
-                    port=self.rport,
+                connection=RawL3SocketConnection(
+                    interface="eth0",
                     send_timeout=5,
                     recv_timeout=5,
                 ),
