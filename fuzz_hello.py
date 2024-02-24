@@ -21,26 +21,40 @@ class OSPFHelloFuzzer_1(OSPFHelloFuzzerBase):
         PARAM_AREA_ID = self.area_id
 
         s_initialize('ospf_hello')
-        if s_block_start('OSPF'):
-            if s_block_start('Header'):
-                s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
-                s_byte(value=0x01, name='Type', fuzzable=False) # Packet type Hello
-                s_size(block_name='Hello', length=2, math=lambda x: x + 20, name='Packet Length', fuzzable=False) # Packet Length
-                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
-                s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
-                s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
-                s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
-                s_dword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+        if s_block_start('IP'):
+            if s_block_start('IP Header'):
+                s_byte(value=0x45, name='Version', fuzzable=False) # IPv4
+                s_byte(value=0xC0, name='TOS', fuzzable=False) # TOS
+                s_size(block_name='OSPF', length=2, math=lambda x: x + 20, name='Total Length', endian=BIG_ENDIAN, fuzzable=False) # Total Length
+                s_word(value=0x0000, name='Identification', fuzzable=False) # Identification
+                s_word(value=0x0000, name='Flags & Fragment Offset', fuzzable=False)
+                s_byte(value=0x01, name='TTL', fuzzable=False) # TTL
+                s_byte(value=0x59, name='Protocol', fuzzable=False) # Protocol OSPF
+                s_checksum(name='Checksum', block_name='IP Header', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
+                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Source IP
+                s_dword(value=helpers.ip_str_to_bytes('224.0.0.5'), name='Target IP', endian=BIG_ENDIAN, fuzzable=False) # Target IP
             s_block_end()
-            if s_block_start('Hello'):
-                s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Network Mask', endian=BIG_ENDIAN, fuzzable=False) # Network Mask
-                s_word(value=10, name='HelloInterval', endian=BIG_ENDIAN, fuzzable=False) # HelloInterval
-                s_byte(value=0x02, name='Options', endian=BIG_ENDIAN, fuzzable=False) # options
-                s_byte(value=0x01, name='Router Priority', endian=BIG_ENDIAN, fuzzable=False) # Router Priority
-                s_dword(value=40, name='Router Dead Interval', endian=BIG_ENDIAN, fuzzable=False) # Router Dead Interval
-                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Designated Router
-                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Backup Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Backup Designated Router
-                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Active Neighbor', endian=BIG_ENDIAN, fuzzable=False) # Active Neighbor
+            if s_block_start('OSPF'):
+                if s_block_start('Header'):
+                    s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
+                    s_byte(value=0x01, name='Type', fuzzable=False) # Packet type Hello
+                    s_size(block_name='Hello', length=2, math=lambda x: x + 20, name='Packet Length', fuzzable=False) # Packet Length
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
+                    s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
+                    s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
+                    s_dword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+                s_block_end()
+                if s_block_start('Hello'):
+                    s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Network Mask', endian=BIG_ENDIAN, fuzzable=False) # Network Mask
+                    s_word(value=10, name='HelloInterval', endian=BIG_ENDIAN, fuzzable=False) # HelloInterval
+                    s_byte(value=0x02, name='Options', endian=BIG_ENDIAN, fuzzable=False) # options
+                    s_byte(value=0x01, name='Router Priority', endian=BIG_ENDIAN, fuzzable=False) # Router Priority
+                    s_dword(value=40, name='Router Dead Interval', endian=BIG_ENDIAN, fuzzable=False) # Router Dead Interval
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Designated Router
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Backup Designated Router', endian=BIG_ENDIAN, fuzzable=False) # Backup Designated Router
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Active Neighbor', endian=BIG_ENDIAN, fuzzable=False) # Active Neighbor
+                s_block_end()
             s_block_end()
         s_block_end()
 
