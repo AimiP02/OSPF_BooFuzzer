@@ -26,7 +26,7 @@ class OSPFLSAckFuzzer_1(OSPFLSAckFuzzer):
         PARAM_ROUTER_ID = self.router_id
         PARAM_AREA_ID = self.area_id
 
-        s_initialize('ospf_hello')
+        s_initialize('ospf_lsack')
         if s_block_start('IP'):
             if s_block_start('IP Header'):
                 s_byte(value=0x45, name='Version', fuzzable=False) # IPv4
@@ -61,13 +61,13 @@ class OSPFLSAckFuzzer_1(OSPFLSAckFuzzer):
                             s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Advertising Router', endian=BIG_ENDIAN, fuzzable=False)
                             s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=False)
                             s_checksum(name='Checksum', block_name=f'LSAck Header - {num}', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
-                            s_word(value=0x0000, name='Length', endian=BIG_ENDIAN, fuzzable=False)
+                            s_word(value=0x0000, name='Length', endian=BIG_ENDIAN, fuzzable=False) # TODO: Length
                         s_block_end()
                 s_block_end()
             s_block_end()
         s_block_end()
 
-        self.session_handle.connect(s_get('ospf_hello'))
+        self.session_handle.connect(s_get('ospf_lsack'))
         self.session_handle.fuzz()
 
 
