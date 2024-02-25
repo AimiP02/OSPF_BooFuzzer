@@ -49,7 +49,7 @@ class OSPFDDFuzzer_1(OSPFDDFuzzer):
                     s_word(value=1500, name='Interface MTU', endian=BIG_ENDIAN, fuzzable=False) # Interface MTU
                     s_byte(value=0x02, name='Options', endian=BIG_ENDIAN, fuzzable=False) # Options
                     s_byte(value=0x07, name='DB Description', endian=BIG_ENDIAN, fuzzable=False) # DB Description
-                    s_dword(value=0x00000000, name='DD Sequence Number', endian=BIG_ENDIAN, fuzzable=True) # DD Sequence Number
+                    s_dword(value=random.randint(0, 0x80000000), name='DD Sequence Number', endian=BIG_ENDIAN, fuzzable=True) # DD Sequence Number
                 s_block_end()
             s_block_end()
         s_block_end()
