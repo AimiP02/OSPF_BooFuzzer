@@ -38,12 +38,12 @@ class OSPFLSRFuzzer_1(OSPFLSRFuzzer):
                 if s_block_start('Header'):
                     s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
                     s_byte(value=0x03, name='Type', fuzzable=False) # Packet type Link State Request
-                    s_size(block_name='Link State Request', length=2, math=lambda x: x + 20, name='Packet Length', fuzzable=False) # Packet Length
+                    s_size(block_name='Link State Request', length=2, math=lambda x: x + 20, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
                     s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
                     s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
-                    s_dword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+                    s_qword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
                 s_block_end()
                 if s_block_start('Link State Request'):
                     for num in range(0, 5):

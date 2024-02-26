@@ -14,32 +14,34 @@ class OSPFLSUFuzzerPacketBase():
     def __init__(self) -> None:
         pass
 
-    def ospf_lsu_packet_dispatch(self, block, fuzz_enable, ls_type):
+    def ospf_lsu_packet_dispatch(self, block, fuzz_enable, ls_type, router_id):
         if ls_type == 1:
-            return self.ospf_lsu_packet_router(block, fuzz_enable)
+            return self.ospf_lsu_packet_router(block, fuzz_enable, router_id)
         elif ls_type == 2:
-            return self.ospf_lsu_packet_network(block, fuzz_enable)
+            return self.ospf_lsu_packet_network(block, fuzz_enable, router_id)
         elif ls_type == 3:
-            return self.ospf_lsu_packet_summary(block, fuzz_enable)
+            return self.ospf_lsu_packet_summary(block, fuzz_enable, router_id)
         elif ls_type == 4:
-            return self.ospf_lsu_packet_asbr_summary(block, fuzz_enable)
+            return self.ospf_lsu_packet_asbr_summary(block, fuzz_enable, router_id)
         elif ls_type == 5:
-            return self.ospf_lsu_packet_as_external(block, fuzz_enable)
+            return self.ospf_lsu_packet_as_external(block, fuzz_enable, router_id)
 
-    def ospf_lsu_packet_router(self, block, fuzz_enable):
+    def ospf_lsu_packet_router(self, block: Block, fuzz_enable: bool, router_id: str) -> Block:
         return block
 
-    def ospf_lsu_packet_network(self, block, fuzz_enable):
+    def ospf_lsu_packet_network(self, block: Block, fuzz_enable: bool, router_id: str) -> Block:           
         return block
+    
+    def ospf_lsu_packet_summary(self, block: Block, fuzz_enable: bool, router_id: str) -> Block:
+        return block
+    
+    def ospf_lsu_packet_asbr_summary(self, block: Block, fuzz_enable: bool, router_id: str) -> Block:
+        return block
+    
+    def ospf_lsu_packet_as_external(self, block: Block, fuzz_enable: bool, router_id: str) -> Block:
+        return block
+    
 
-    def ospf_lsu_packet_summary(self, block, fuzz_enable):
-        return block
-
-    def ospf_lsu_packet_asbr_summary(self, block, fuzz_enable):
-        return block
-
-    def ospf_lsu_packet_as_external(self, block, fuzz_enable):
-        return block
 
 class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
 
@@ -69,32 +71,47 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
                 if s_block_start('Header'):
                     s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
                     s_byte(value=0x04, name='Type', fuzzable=False) # Packet type Link State Update
-                    s_size(block_name='Link State Update', length=2, math=lambda x: x + 20, name='Packet Length', fuzzable=False) # Packet Length
+                    s_size(block_name='Link State Update', length=2, math=lambda x: x + 20, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
                     s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
                     s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
-                    s_dword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+                    s_qword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
                 s_block_end()
                 if s_block_start('Link State Update'):
                     number_of_lsa = random.randint(1, 5)
                     s_dword(value=number_of_lsa, name='Number of LSAs', endian=BIG_ENDIAN, fuzzable=False) # Number of LSAs
                     for num in range(0, number_of_lsa):
-                        if s_block_start('LSA Header'):
-                            ls_type = random.randint(1, 5)
+                        if s_block_start(f'LSA Header - {num}'):
+                            ls_type = 1
                             s_word(value=0x0001, name='LS Age', endian=BIG_ENDIAN, fuzzable=False) # LS Age
                             s_byte(value=0x02, name='Options', fuzzable=False) # Options
                             s_byte(value=ls_type, name='LS Type', fuzzable=False) # LS Type
                             s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
                             s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Advertising Router', endian=BIG_ENDIAN, fuzzable=False)
                             s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=False)
-                            s_checksum(name='Checksum', block_name=f'LSA Header', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
+                            s_checksum(name='Checksum', block_name=f'LSA Header - {num}', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
                             s_word(value=0x0000, name='Length', endian=BIG_ENDIAN, fuzzable=False) # TODO: Length
 
                             # LSA Start 
-                            LSA = s_block_start(f'LSA - {num}')
-                            LSA = self.ospf_lsu_packet_dispatch(LSA, False, ls_type)
-                            s_block_end(LSA)
+                            if s_block_start(f'LSA - {num}'):
+                                s_byte(value=0x00, name='Flags', endian=BIG_ENDIAN, fuzzable=False)
+                                s_bit_field(value=0x00, name='Wild-card', width=1, endian=BIG_ENDIAN, fuzzable=False)
+                                s_bit_field(value=0x00, name='V', width=1, endian=BIG_ENDIAN, fuzzable=False)
+                                s_bit_field(value=0x00, name='E', width=1, endian=BIG_ENDIAN, fuzzable=False)
+                                s_bit_field(value=0x00, name='B', width=1, endian=BIG_ENDIAN, fuzzable=False)
+                                number_of_links_param = random.randint(1, 10)
+                                s_word(value=number_of_links_param, name='Number of Links', endian=BIG_ENDIAN, fuzzable=False)
+
+                                for link_num in range(0, number_of_links_param):
+                                    if s_block_start(f'Link - {link_num}'):
+                                        s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link ID', endian=BIG_ENDIAN, fuzzable=False)
+                                        s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Link Data', endian=BIG_ENDIAN, fuzzable=False)
+                                        s_byte(value=0x02, name='Link Type', endian=BIG_ENDIAN, fuzzable=False)
+                                        s_byte(value=0x00, name='TOS', endian=BIG_ENDIAN, fuzzable=False)
+                                        s_word(value=random.randint(1, 100), name='Metric', endian=BIG_ENDIAN, fuzzable=False)
+                                    s_block_end()
+                            s_block_end()    
                             # LSA End
                         s_block_end()
                 s_block_end()

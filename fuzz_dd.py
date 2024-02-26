@@ -38,12 +38,12 @@ class OSPFDDFuzzer_1(OSPFDDFuzzer):
                 if s_block_start('Header'):
                     s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
                     s_byte(value=0x02, name='Type', fuzzable=False) # Packet type Database Description
-                    s_size(block_name='Database Description', length=2, math=lambda x: x + 20, name='Packet Length', fuzzable=False) # Packet Length
+                    s_size(block_name='Database Description', length=2, math=lambda x: x + 20, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
                     s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
                     s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
-                    s_dword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+                    s_qword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
                 s_block_end()
                 if s_block_start('Database Description'):
                     s_word(value=1500, name='Interface MTU', endian=BIG_ENDIAN, fuzzable=False) # Interface MTU
