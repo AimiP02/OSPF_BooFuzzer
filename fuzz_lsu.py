@@ -29,13 +29,10 @@ class OSPFLSUFuzzerPacketBase():
         elif ls_type == 5:
             return self.ospf_lsu_packet_as_external()
 
-    def ospf_lsu_packet_router(self, fuzz_enable: bool):
+    def ospf_lsu_packet_router(self):
         if s_block_start(f'LSA - {self.packet_index}'):
             s_byte(value=0x00, name='Flags', endian=BIG_ENDIAN, fuzzable=False)
-            s_bit_field(value=0x00, name='Wild-card', width=1, endian=BIG_ENDIAN, fuzzable=False)
-            s_bit_field(value=0x00, name='V', width=1, endian=BIG_ENDIAN, fuzzable=False)
-            s_bit_field(value=0x00, name='E', width=1, endian=BIG_ENDIAN, fuzzable=False)
-            s_bit_field(value=0x00, name='B', width=1, endian=BIG_ENDIAN, fuzzable=False)
+            s_bit_field(value=0x00, name='WVEB', width=4, endian=BIG_ENDIAN, fuzzable=False)
             number_of_links_param = random.randint(1, 10)
             s_word(value=number_of_links_param, name='Number of Links', endian=BIG_ENDIAN, fuzzable=False)
             for link_num in range(0, number_of_links_param):
@@ -57,13 +54,37 @@ class OSPFLSUFuzzerPacketBase():
         s_block_end()
     
     def ospf_lsu_packet_summary(self):
-        pass
+        if s_block_start(f'LSA - {self.packet_index}'):
+            s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Network Mask', endian=BIG_ENDIAN, fuzzable=False) # Network Mask
+            s_byte(value=0x00, name='Padding - 1', endian=BIG_ENDIAN, fuzzable=False)
+            s_bytes(value=b'\x00\x00\x00', size=3, name='metric', fuzzable=False)
+            s_byte(value=0x00, name='TOS', endian=BIG_ENDIAN, fuzzable=False)
+            s_bytes(value=b'\x00\x00\x00', size=3, name='TOS metric', fuzzable=False)
+        s_block_end()
     
     def ospf_lsu_packet_asbr_summary(self):
-        pass
+        if s_block_start(f'LSA - {self.packet_index}'):
+            s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Network Mask', endian=BIG_ENDIAN, fuzzable=False) # Network Mask
+            s_byte(value=0x00, name='Padding - 1', endian=BIG_ENDIAN, fuzzable=False)
+            s_bytes(value=b'\x00\x00\x00', size=3, name='metric', fuzzable=False)
+            s_byte(value=0x00, name='TOS', endian=BIG_ENDIAN, fuzzable=False)
+            s_bytes(value=b'\x00\x00\x00', size=3, name='TOS metric', fuzzable=False)
+        s_block_end()
     
     def ospf_lsu_packet_as_external(self):
-        pass
+        if s_block_start(f'LSA - {self.packet_index}'):
+            s_dword(value=helpers.ip_str_to_bytes('255.255.255.0'), name='Network Mask', endian=BIG_ENDIAN, fuzzable=False) # Network Mask
+            number_of_route = random.randint(0, 10)
+            for num in range(number_of_route):
+                if s_block_start(f'External - {num}'):
+                    s_bit(value=0x00, name='E', width=1, endian=BIG_ENDIAN, fuzzable=False)
+                    s_bytes(value=b'\x00\x00\x00', size=3, name='metric', fuzzable=False)
+                    s_dword(value=helpers.ip_str_to_bytes(self.router_id), name='Forwarding address', endian=BIG_ENDIAN, fuzzable=False) # Forwarding address
+                    s_dword(name='External Route Tag', endian=BIG_ENDIAN, fuzzable=False) # External Route Tag
+                    s_byte(value=0x00, name='TOS', endian=BIG_ENDIAN, fuzzable=False)
+                    s_bytes(value=b'\x00\x00\x00', size=3, name='TOS metric', fuzzable=False)
+                s_block_end()
+        s_block_end()
     
 
 
