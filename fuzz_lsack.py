@@ -44,7 +44,7 @@ class OSPFLSAckFuzzer_1(OSPFLSAckFuzzer):
                 if s_block_start('Header'):
                     s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
                     s_byte(value=0x05, name='Type', fuzzable=False) # Packet type Link State Acknowledgment
-                    s_size(block_name='Link State Acknowledgment', length=2, math=lambda x: x + 20, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
+                    s_size(block_name='Link State Acknowledgment', length=2, math=lambda x: x + 24, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
                     s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
                     s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
