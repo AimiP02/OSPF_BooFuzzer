@@ -61,7 +61,7 @@ class OSPFLSAckFuzzer_1(OSPFLSAckFuzzer):
                             s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Advertising Router', endian=BIG_ENDIAN, fuzzable=False)
                             s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=False)
                             s_checksum(name='Checksum', block_name=f'LSAck Header - {num}', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
-                            s_size(block_name=f'LSA - {num}', length=2, math=lambda x: x + 20, name='Length', endian=BIG_ENDIAN, fuzzable=False)
+                            s_size(block_name=f'LSAck Header - {num}', length=2, math=lambda x: x + 20, name='Length', endian=BIG_ENDIAN, fuzzable=False)
                         s_block_end()
                 s_block_end()
             s_block_end()
