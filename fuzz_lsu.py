@@ -81,8 +81,6 @@ class OSPFLSUFuzzerPacketBase():
                     s_bytes(value=b'\x00\x00\x00', size=3, name='metric', fuzzable=False)
                     s_dword(value=helpers.ip_str_to_bytes(self.router_id), name='Forwarding address', endian=BIG_ENDIAN, fuzzable=False) # Forwarding address
                     s_dword(name='External Route Tag', endian=BIG_ENDIAN, fuzzable=False) # External Route Tag
-                    s_byte(value=0x00, name='TOS', endian=BIG_ENDIAN, fuzzable=False)
-                    s_bytes(value=b'\x00\x00\x00', size=3, name='TOS metric', fuzzable=False)
                 s_block_end()
         s_block_end()
     
