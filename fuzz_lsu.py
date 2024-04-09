@@ -28,6 +28,8 @@ class OSPFLSUFuzzerPacketBase():
             return self.ospf_lsu_packet_asbr_summary()
         elif ls_type == 5:
             return self.ospf_lsu_packet_as_external()
+        elif ls_type == 9 or ls_type == 10 or ls_type == 11:
+            return self.ospf_lsu_packet_opaque()
 
     def ospf_lsu_packet_router(self):
         if s_block_start(f'LSA - {self.packet_index}'):
@@ -84,6 +86,21 @@ class OSPFLSUFuzzerPacketBase():
                 s_block_end()
         s_block_end()
     
+    def ospf_lsu_packet_opaque(self):
+        if s_block_start(f'LSA - {self.packet_index}'):
+            s_word(value=2, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False) # Opaque Type
+            s_size(block_name=f'sub-TLV - {self.packet_index}', length=2, endian=BIG_ENDIAN, math=lambda x: x + 4, name="Opaque Length", fuzzable=False) # Opaque Length
+            if s_block_start(f'sub-TLV - {self.packet_index}'):
+                s_word(value=3, name='Opaque Type 1', endian=BIG_ENDIAN, fuzzable=False)
+                s_word(value=4, name='Opaque Length 1', endian=BIG_ENDIAN, fuzzable=False)
+                s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 1', fuzzable=False)
+
+                s_word(value=3, name='Opaque Type 2', endian=BIG_ENDIAN, fuzzable=False)
+                s_word(value=8, name='Opaque Length 2', endian=BIG_ENDIAN, fuzzable=False)
+                s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 2.1', fuzzable=False)
+                s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 2.2', fuzzable=False)
+            s_block_end()
+        s_block_end()
 
 
 class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
@@ -122,17 +139,23 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
                     s_qword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
                 s_block_end()
                 if s_block_start('Link State Update'):
-                    number_of_lsa = random.randint(1, 5)
+                    number_of_lsa = 1
                     s_dword(value=number_of_lsa, name='Number of LSAs', endian=BIG_ENDIAN, fuzzable=False) # Number of LSAs
                     for num in range(0, number_of_lsa):
                         if s_block_start(f'LSA Header - {num}'):
-                            ls_type = random.randint(1, 5)
+                            ls_type = 11
                             s_word(value=0x0001, name='LS Age', endian=BIG_ENDIAN, fuzzable=False) # LS Age
                             s_byte(value=0x02, name='Options', fuzzable=False) # Options
                             s_byte(value=ls_type, name='LS Type', fuzzable=False) # LS Type
-                            s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
+                            
+                            if ls_type >= 9 and ls_type <= 11:
+                                s_byte(value=6, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
+                                s_bytes(value=b'\x00\x00\x00', size=3, name='Opaque ID', fuzzable=False)
+                            else:
+                                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
+                            
                             s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Advertising Router', endian=BIG_ENDIAN, fuzzable=False)
-                            s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=False)
+                            s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=True)
                             s_checksum(name='Checksum', block_name=f'LSA Header - {num}', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
                             s_size(block_name=f'LSA - {num}', length=2, math=lambda x: x + 20, name='Length', endian=BIG_ENDIAN, fuzzable=False)
 
