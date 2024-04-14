@@ -16,6 +16,7 @@ class BaseFuzzer():
                     interface="eth0",
                     send_timeout=5,
                     recv_timeout=5,
+                    l2_dst=b'\x01\x00\x5e\x00\x00\x05'
                 ),
             ),
             fuzz_loggers=[self.fuzz_logger],
