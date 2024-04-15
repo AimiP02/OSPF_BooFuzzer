@@ -25,6 +25,7 @@ services:
                 privileged: true
                 ports:
                         - "26000:12345"
+
         frrouter2:
                 build:
                         context: ./build
@@ -40,6 +41,7 @@ services:
                         - ./files/orchestrator.sh:/usr/src/files/orchestrator.sh
                         - ./configs/frrouter2/.env:/usr/src/config/.env
                         - ./configs/frrouter2/frr/:/etc/frr
+                        - /home/lab420/ospf_work/ospf_boofuzzer/:/home/fuzzer
                 cap_add:
                         - NET_ADMIN
                         - NET_BIND_SERVICE

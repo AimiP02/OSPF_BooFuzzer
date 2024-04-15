@@ -156,7 +156,7 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
                             
                             if ls_type >= 9 and ls_type <= 11:
                                 s_byte(value=1, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
-                                s_bytes(value=0, size=3, name='Opaque ID', fuzzable=False)
+                                s_bytes(value=b'\x00\x00\x05', size=3, name='Opaque ID', fuzzable=False)
                             else:
                                 s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
                             

@@ -1,4 +1,5 @@
 from boofuzz import *
+import os
 
 '''
 The base class for all fuzzers.
@@ -12,6 +13,7 @@ class BaseFuzzer():
         self.fuzz_logger = FuzzLoggerCsv()
         self.session_handle = Session(
             target=Target(
+                # You need to change l2_dst MAC address and interface name.
                 connection=RawL3SocketConnection(
                     interface="eth0",
                     send_timeout=5,
@@ -51,6 +53,13 @@ class BaseFuzzer():
         if self.rpc_client.is_target_alive() == False:
             mutant_index = session.mutant_index-1
             payload = self.get_payload(session, mutant_index)
+            
+            if payload is not None:
+                if not os.path.exists("/tmp/fuzzing/payloads"):
+                    os.makedirs("/tmp/fuzzing/payloads")
+                with open(f"/tmp/fuzzing/payloads/{type(self).__name__}_{mutant_index}.bin", "wb") as f:
+                    f.write(payload)
+
             self.rpc_client.receive_testcase(type(self).__name__, mutant_index, payload)
 
     '''
