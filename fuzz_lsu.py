@@ -88,14 +88,18 @@ class OSPFLSUFuzzerPacketBase():
     
     def ospf_lsu_packet_opaque(self):
         if s_block_start(f'LSA - {self.packet_index}'):
-            s_word(value=2, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False) # Opaque Type
-            s_size(block_name=f'sub-TLV - {self.packet_index}', length=2, endian=BIG_ENDIAN, math=lambda x: x + 4, name="Opaque Length", fuzzable=False) # Opaque Length
-            if s_block_start(f'sub-TLV - {self.packet_index}'):
+            s_word(value=1, name='TLV ROUTER ADDR Type', endian=BIG_ENDIAN, fuzzable=False) # TLV_ROUTER_ADDR
+            s_word(value=4, name='TLV ROUTER ADDR Length', endian=BIG_ENDIAN, fuzzable=False) # TLV ROUTER ADDR Length
+            s_dword(value=helpers.ip_str_to_bytes(self.router_id), name='Router Address', endian=BIG_ENDIAN, fuzzable=False) # Router Address
+
+            s_word(value=2, name='TLV LINK Type', endian=BIG_ENDIAN, fuzzable=False) # TLV_LINK
+            s_size(block_name=f'sub-TLVs - {self.packet_index}', length=2, endian=BIG_ENDIAN, name="TLV LINK Length", fuzzable=False) # Opaque Length
+            if s_block_start(f'sub-TLVs - {self.packet_index}'):
                 s_word(value=3, name='Opaque Type 1', endian=BIG_ENDIAN, fuzzable=False)
                 s_word(value=4, name='Opaque Length 1', endian=BIG_ENDIAN, fuzzable=False)
                 s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 1', fuzzable=False)
 
-                s_word(value=3, name='Opaque Type 2', endian=BIG_ENDIAN, fuzzable=False)
+                s_word(value=11, name='Opaque Type 2', endian=BIG_ENDIAN, fuzzable=False)
                 s_word(value=8, name='Opaque Length 2', endian=BIG_ENDIAN, fuzzable=False)
                 s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 2.1', fuzzable=False)
                 s_bytes(value=b'\x00\x00\x00\x00', size=4, name='Opaque Data 2.2', fuzzable=False)
@@ -142,15 +146,17 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
                     number_of_lsa = 1
                     s_dword(value=number_of_lsa, name='Number of LSAs', endian=BIG_ENDIAN, fuzzable=False) # Number of LSAs
                     for num in range(0, number_of_lsa):
-                        if s_block_start(f'LSA Header - {num}'):
-                            ls_type = 11
+                        if s_block_start(f'LSA Header Age - {num}'):
                             s_word(value=0x0001, name='LS Age', endian=BIG_ENDIAN, fuzzable=False) # LS Age
+                        s_block_end()
+                        if s_block_start(f'LSA Header - {num}'):
+                            ls_type = 10
                             s_byte(value=0x02, name='Options', fuzzable=False) # Options
                             s_byte(value=ls_type, name='LS Type', fuzzable=False) # LS Type
                             
                             if ls_type >= 9 and ls_type <= 11:
-                                s_byte(value=6, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
-                                s_bytes(value=b'\x00\x00\x00', size=3, name='Opaque ID', fuzzable=False)
+                                s_byte(value=1, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
+                                s_bytes(value=b'\x00\x00\x05', size=3, name='Opaque ID', fuzzable=False)
                             else:
                                 s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
                             
