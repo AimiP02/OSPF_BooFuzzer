@@ -117,19 +117,19 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
         PARAM_ROUTER_ID = self.router_id
         PARAM_AREA_ID = self.area_id
 
-        s_initialize('ospf_lsu')
+        s_initialize('ospf_lsu1')
         if s_block_start('IP'):
             if s_block_start('IP Header'):
                 s_byte(value=0x45, name='Version', fuzzable=False) # IPv4
                 s_byte(value=0xC0, name='TOS', fuzzable=False) # TOS
                 s_size(block_name='OSPF', length=2, math=lambda x: x + 20, name='Total Length', endian=BIG_ENDIAN, fuzzable=False) # Total Length
-                s_word(value=0x0000, name='Identification', fuzzable=False) # Identification
+                s_word(value=0x5d5d, name='Identification', endian=BIG_ENDIAN, fuzzable=False) # Identification
                 s_word(value=0x0000, name='Flags & Fragment Offset', fuzzable=False)
                 s_byte(value=0x01, name='TTL', fuzzable=False) # TTL
                 s_byte(value=0x59, name='Protocol', fuzzable=False) # Protocol OSPF
                 s_checksum(name='Checksum', block_name='IP Header', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
                 s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Source IP
-                s_dword(value=helpers.ip_str_to_bytes('224.0.0.5'), name='Target IP', endian=BIG_ENDIAN, fuzzable=False) # Target IP
+                s_dword(value=helpers.ip_str_to_bytes('172.19.0.3'), name='Target IP', endian=BIG_ENDIAN, fuzzable=False) # Target IP
             s_block_end()
             if s_block_start('OSPF'):
                 if s_block_start('Header'):
@@ -156,7 +156,7 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
                             
                             if ls_type >= 9 and ls_type <= 11:
                                 s_byte(value=1, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
-                                s_bytes(value=0, size=3, name='Opaque ID', fuzzable=False)
+                                s_bytes(value=b'\x00\x00\x05', size=3, name='Opaque ID', fuzzable=False)
                             else:
                                 s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
                             
@@ -173,7 +173,64 @@ class OSPFLSUFuzzer_1(OSPFLSUFuzzer, OSPFLSUFuzzerPacketBase):
             s_block_end()
         s_block_end()
 
-        self.session_handle.connect(s_get('ospf_lsu'))
+        s_initialize('ospf_lsu2')
+        if s_block_start('IP'):
+            if s_block_start('IP Header'):
+                s_byte(value=0x45, name='Version', fuzzable=False) # IPv4
+                s_byte(value=0xC0, name='TOS', fuzzable=False) # TOS
+                s_size(block_name='OSPF', length=2, math=lambda x: x + 20, name='Total Length', endian=BIG_ENDIAN, fuzzable=False) # Total Length
+                s_word(value=0x5d5d, name='Identification', endian=BIG_ENDIAN, fuzzable=False) # Identification
+                s_word(value=0x0000, name='Flags & Fragment Offset', fuzzable=False)
+                s_byte(value=0x01, name='TTL', fuzzable=False) # TTL
+                s_byte(value=0x59, name='Protocol', fuzzable=False) # Protocol OSPF
+                s_checksum(name='Checksum', block_name='IP Header', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
+                s_dword(value=helpers.ip_str_to_bytes('172.19.0.2'), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Source IP
+                s_dword(value=helpers.ip_str_to_bytes('172.19.0.3'), name='Target IP', endian=BIG_ENDIAN, fuzzable=False) # Target IP
+            s_block_end()
+            if s_block_start('OSPF'):
+                if s_block_start('Header'):
+                    s_byte(value=0x02, name='Version', fuzzable=False) # Version OSPFv2
+                    s_byte(value=0x04, name='Type', fuzzable=False) # Packet type Link State Update
+                    s_size(block_name='Link State Update', length=2, math=lambda x: x + 24, name='Packet Length', endian=BIG_ENDIAN, fuzzable=False) # Packet Length
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Router ID', endian=BIG_ENDIAN, fuzzable=False) # Router ID
+                    s_dword(value=helpers.ip_str_to_bytes(PARAM_AREA_ID), name='Area ID', endian=BIG_ENDIAN, fuzzable=False) # Area ID
+                    s_checksum(name='Checksum', block_name='OSPF', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # Checksum
+                    s_word(value=0x0000, name='Autype', endian=BIG_ENDIAN, fuzzable=False) # Autype
+                    s_qword(value=0x00000000, name='Authentication', endian=BIG_ENDIAN, fuzzable=False) # Authentication
+                s_block_end()
+                if s_block_start('Link State Update'):
+                    number_of_lsa = 1
+                    s_dword(value=number_of_lsa, name='Number of LSAs', endian=BIG_ENDIAN, fuzzable=False) # Number of LSAs
+                    for num in range(0, number_of_lsa):
+                        if s_block_start(f'LSA Header Age - {num}'):
+                            s_word(value=0x0001, name='LS Age', endian=BIG_ENDIAN, fuzzable=False) # LS Age
+                        s_block_end()
+                        if s_block_start(f'LSA Header - {num}'):
+                            ls_type = 10
+                            s_byte(value=0x02, name='Options', fuzzable=False) # Options
+                            s_byte(value=ls_type, name='LS Type', fuzzable=False) # LS Type
+                            
+                            if ls_type >= 9 and ls_type <= 11:
+                                s_byte(value=1, name='Opaque Type', endian=BIG_ENDIAN, fuzzable=False)
+                                s_bytes(value=b'\x00\x00\x05', size=3, name='Opaque ID', fuzzable=False)
+                            else:
+                                s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Link State ID', endian=BIG_ENDIAN, fuzzable=False)
+                            
+                            s_dword(value=helpers.ip_str_to_bytes(PARAM_ROUTER_ID), name='Advertising Router', endian=BIG_ENDIAN, fuzzable=False)
+                            s_dword(value=random.randint(0, 0x80000000), name='LS Sequence Number', endian=BIG_ENDIAN, fuzzable=True)
+                            s_checksum(name='Checksum', block_name=f'LSA Header - {num}', algorithm='ipv4', endian=BIG_ENDIAN, fuzzable=False) # LS Checksum
+                            s_size(block_name=f'LSA - {num}', length=2, math=lambda x: x + 20, name='Length', endian=BIG_ENDIAN, fuzzable=False)
+
+                            # LSA Start 
+                            self.ospf_lsu_packet_dispatch(fuzz_enable=True, ls_type=ls_type, router_id=PARAM_ROUTER_ID, packet_index=num)
+                            # LSA End
+                        s_block_end()
+                s_block_end()
+            s_block_end()
+        s_block_end()
+
+        self.session_handle.connect(s_get('ospf_lsu1'))
+        self.session_handle.connect(s_get('ospf_lsu1'), s_get('ospf_lsu2'))
         self.session_handle.fuzz()
 
 
