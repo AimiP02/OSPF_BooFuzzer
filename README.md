@@ -114,3 +114,11 @@ docker 配置的 volumns 映射是绝对路径，需要根据实际情况修改
                 privileged: true
 ```
 
+## Result
+
+测试复现[CVE-2024-27913](https://www.cvedetails.com/cve/CVE-2024-27913/)漏洞，结果如下
+
+![](./img/Snipaste_2024-07-13_13-30-56.png)
+
+![](./img/图片1.png)
+
