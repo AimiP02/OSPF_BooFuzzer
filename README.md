@@ -78,7 +78,7 @@ docker 配置的 volumns 映射是绝对路径，需要根据实际情况修改
                         - ./files/orchestrator.sh:/usr/src/files/orchestrator.sh
                         - ./configs/frrouter1/.env:/usr/src/config/.env
                         - ./configs/frrouter1/frr/:/etc/frr
-                        - /home/lab420/ospf_work/ospf_boofuzzer/:/home/fuzzer
+                        - /home/ospf_boofuzzer/:/home/fuzzer
                 cap_add:
                         - NET_ADMIN
                         - NET_BIND_SERVICE
@@ -104,7 +104,7 @@ docker 配置的 volumns 映射是绝对路径，需要根据实际情况修改
                         - ./files/orchestrator.sh:/usr/src/files/orchestrator.sh
                         - ./configs/frrouter2/.env:/usr/src/config/.env
                         - ./configs/frrouter2/frr/:/etc/frr
-                        - /home/lab420/ospf_work/ospf_boofuzzer/:/home/fuzzer
+                        - /home/ospf_boofuzzer/:/home/fuzzer
                 cap_add:
                         - NET_ADMIN
                         - NET_BIND_SERVICE
